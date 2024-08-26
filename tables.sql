@@ -21,3 +21,15 @@ CREATE TABLE IF NOT EXISTS ex (
   items TEXT NOT NULL,
   FOREIGN KEY (username) REFERENCES login(username)
 );
+
+-- Creates a 'reviews' table
+CREATE TABLE IF NOT EXISTS reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL,
+  username TEXT NOT NULL,
+  rating INTEGER NOT NULL,
+  comment TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES items(id),
+  FOREIGN KEY (username) REFERENCES login(username)
+);

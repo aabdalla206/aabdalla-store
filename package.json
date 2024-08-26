@@ -1,18 +1,16 @@
 {
-  "name": "fp-partner-karshin-tooly206",
+  "name": "fp-partner-dbejar17-tooly206",
   "version": "1.0.0",
-  "description": "Final Project",
+  "description": "## Intro For your final project you are tasked with creating a fully-fledged website. This full stack assignment will involve HTML, CSS, client-side JavaScript, server-side JavaScript, and a SQL database (**no file I/O allowed**). This assignment is a mix between a CP and a HW. Although there are specific requirements, like a HW, you have a lot of freedom in how you implement and design your website, like a CP. Since this is a full stack assignment, you might want to include your work in your portfolio. This is allowed, however, you should not post or share **any part** of this assignment until **after the assignment locks on Gradescope.**",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.2",
     "express": "^4.19.2",
-    "path": "^0.12.7",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.7"
   }
 }

@@ -1,5 +1,6 @@
 // Final Project index.js file
 "use strict";
+
 (function() {
 
   window.addEventListener("load", init);
@@ -10,8 +11,40 @@
 
   /** Initiator function */
   function init() {
-    load();
+    setupLoginListener();
   }
+
+  function setupLoginListener() {
+    document.getElementById('login').addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent the form from submitting traditionally
+      performLogin();
+    });
+  }
+
+  function performLogin() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+    }).then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('login-form-container').style.display = 'none'; // Hide login form
+            document.getElementById('main-content').classList.remove('hidden'); // Show the rest of the content
+            load();
+        } else {
+            document.getElementById('login-error').textContent = data.message;
+        }
+    })
+    .catch(error => {
+        console.error('Login Error:', error);
+        document.getElementById('login-error').textContent = 'Login failed, please try again.';
+    });
+}
 
   /** Load page */
   function load() {
@@ -20,6 +53,7 @@
     fetchCategory("mens");
     fetchCategory("womens");
     fetchCategory("childrens");
+    document.body.style.display = 'block';
   }
 
   /**
@@ -34,6 +68,7 @@
     qs("#mens-btn").addEventListener('click', handleCategoryBtn.bind(null, "#mens"));
     qs("#womens-btn").addEventListener('click', handleCategoryBtn.bind(null, "#womens"));
     qs("#childrens-btn").addEventListener('click', handleCategoryBtn.bind(null, "#childrens"));
+    qs("#toggleView-btn").addEventListener("click", toggleView);
 
     search();
     filterEvents();
@@ -44,6 +79,23 @@
     modeSwitch.addEventListener("change", function() {
       body.classList.toggle("dark-mode");
     });
+  }
+
+  function toggleView() {
+    let categorySections = document.querySelectorAll(".category");
+    let toggleButton = document.getElementById("toggleView-btn");
+
+    categorySections.forEach(section => {
+      section.classList.toggle("block-view");
+    });
+
+    let isBlockView = categorySections[0].classList.contains("block-view");
+
+    if(isBlockView) {
+      toggleButton.textContent = "Block View";
+    } else {
+      toggleButton.textContent = "List View";
+    }
   }
 
   /**
@@ -137,7 +189,7 @@
    * @param {string} category Item category
    * @param {string} type Item type
    */
-  function populate(res, category, type) {
+   function populate(res, category, type) {
     const container = document.querySelector('.category#' + category);
     res.forEach(item => {
       const newItem = document.createElement('section');
@@ -167,11 +219,33 @@
       container.appendChild(newItem);
       setImg(item.id, type);
 
-      newItem.addEventListener('click', () => {
-        displayItemDetails(item);
-        qs("#popup").classList.add("open");
+      newItem.addEventListener('click', async () => {
+        console.log('Clicked Item Name:', item.name); // Log the item name
+        console.log('Product ID:', item.id);
+        const productId = await fetchProductIdByName(item.name);
+        if (productId) {
+          item.id = productId;
+          displayItemDetails(item);
+          qs("#popup").classList.add("open");
+        }
       });
     });
+  }
+
+  async function fetchProductIdByName(name) {
+    try {
+      const response = await fetch(`/api/product-id?name=${encodeURIComponent(name)}`);
+      const data = await response.json();
+      if (data.success) {
+        return data.id;
+      } else {
+        console.error('Product not found:', data.message);
+        return null;
+      }
+    } catch (err) {
+      console.error('Error fetching product ID:', err);
+      return null;
+    }
   }
 
   // Sets item image ABOVE everything else
@@ -211,7 +285,11 @@
    * Displays item details in the DOM
    * @param {Object} data - The item data to display
    */
-  function displayItemDetails(data) {
+  function displayItemDetails(data, productId) {
+    //const productId = document.getElementById('item-name').dataset.productId;
+    const itemNameElement = document.getElementById('item-name');
+    itemNameElement.textContent = data.name;
+    itemNameElement.dataset.productId = productId;
     document.getElementById('item-name').textContent = data.name;
     document.getElementById('item-description').textContent = data.description;
     document.getElementById('item-price').textContent = data.price;
@@ -219,11 +297,59 @@
     let item = qs(`.item[data-item-id="${data.id}"] img`);
     document.getElementById('item-image').src = item.src;
 
-    qs('#buy').addEventListener('click', () => handlePurchase(data.id));
+    fetchReviews(productId);
+
+    const submitReviewButton = document.getElementById('submit-review-btn');
+    submitReviewButton.removeEventListener('click', submitReview); // Remove any existing listener
+    submitReviewButton.addEventListener('click', submitReview);
+
+    qs('#buy').removeEventListener('click', handleBuyClick);
+    qs('#buy').addEventListener('click', () => handleBuyClick(productId));
+
     qs('#close-popup').addEventListener('click', () => {
       qs('#popup').classList.remove('open');
     });
   }
+
+  function handleBuyClick(productId) {
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+
+    if (!confirmationModal || !modalBackdrop) {
+      console.error('Confirmation modal or backdrop not found');
+      return;
+    }
+    confirmationModal.classList.remove('hidden');
+    modalBackdrop.classList.remove('hidden');
+    console.log("Confirmation modal displayed");
+
+    const confirmPurchaseBtn = document.getElementById('confirm-purchase-btn');
+    const cancelPurchaseBtn = document.getElementById('cancel-purchase-btn');
+
+    const confirmHandler = function() {
+      console.log("Confirm purchase clicked for product ID:", productId);
+      handlePurchase(productId);
+      confirmationModal.classList.add('hidden');
+      modalBackdrop.classList.add('hidden');
+      confirmPurchaseBtn.removeEventListener('click', confirmHandler);
+    };
+
+    const cancelHandler = function() {
+      console.log("Cancel purchase clicked");
+      confirmationModal.classList.add('hidden');
+      modalBackdrop.classList.add('hidden');
+      cancelPurchaseBtn.removeEventListener('click', cancelHandler);
+    };
+
+    confirmPurchaseBtn.addEventListener('click', confirmHandler);
+    cancelPurchaseBtn.addEventListener('click', cancelHandler);
+
+    document.getElementById('buy').addEventListener('click', function() {
+      const productId = document.getElementById('item-name').dataset.productId;
+      handleBuyClick(productId);
+    });
+  }
+
 
   /**
    * This function searches the database for an inputted request. It will fetch all items that
@@ -364,6 +490,7 @@
 
   // handles the purchase of the items
   async function handlePurchase(itemId) {
+    if (!productId) return;
     const userId = "cooluser";
 
     try {
@@ -385,6 +512,11 @@
       showPopupMessage('An error occurred. Please try again.');
     }
   }
+
+  function cancelPurchase() {
+  const confirmationModal = document.getElementById('confirmation-modal');
+  confirmationModal.classList.add('hidden');
+}
 
   async function fetchPurchaseHistory() {
     const username = "cooluser"; // Hardcoded for now, replace with dynamic username if needed
@@ -417,7 +549,17 @@
       const itemsList = document.createElement('ul');
       order.items.forEach(item => {
         const itemElement = document.createElement('li');
-        itemElement.textContent = `${item.name} - $${item.price}`;
+
+        const itemImage = document.createElement('img');
+        itemImage.src = `/images/${item.id}.jpg`; // Assuming image naming convention is based on product ID
+        itemImage.alt = item.name;
+        itemImage.style.width = '50px'; // Adjust size as needed
+
+        const itemDetails = document.createElement('span');
+        itemDetails.textContent = `${item.name} - $${item.price}`;
+
+        itemElement.appendChild(itemImage);
+        itemElement.appendChild(itemDetails);
         itemsList.appendChild(itemElement);
       });
 
@@ -442,7 +584,64 @@
     }, 3000); // Adjust time as needed
   }
 
-  // Add the following function to your existing code
+    /**
+   * Submits a review for a product.
+   */
+     async function submitReview() {
+      try {
+        const productId = document.getElementById('item-name').dataset.productId;
+        const rating = document.getElementById('review-rating').value;
+        const comment = document.getElementById('review-comment').value;
+
+        console.log('Product ID:', productId);
+        console.log('Rating:', rating);
+        console.log('Comment:', comment);
+
+        const response = await fetch('/api/reviews', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            product_id: productId,
+            username: 'cooluser', // Replace with dynamic username if available
+            rating: rating,
+            comment: comment
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          console.log('Review submitted successfully:', data);
+          fetchReviews(productId);
+        } else {
+          console.error('Error submitting review:', data);
+        }
+      } catch (err) {
+        console.error('Error submitting review:', err);
+      }
+    }
+  /**
+   * Fetches reviews for a product.
+   * @param {number} productId - The ID of the product to fetch reviews for.
+   */
+   async function fetchReviews(productId) {
+    try {
+      const response = await fetch(`/api/reviews/${productId}`);
+      const reviews = await response.json();
+      console.log('Fetched reviews:', reviews); // Add this line for debugging
+
+      const reviewsList = document.getElementById('reviews-list');
+      reviewsList.innerHTML = ''; // Clear existing reviews
+
+      reviews.forEach(review => {
+        const li = document.createElement('li');
+        li.textContent = `${review.rating} stars - ${review.comment}`;
+        reviewsList.appendChild(li);
+      });
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    }
+  }
 
   /**
    * Fetches recommendations based on user's purchase history
