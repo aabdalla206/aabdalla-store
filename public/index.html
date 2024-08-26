@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<!--
+  ***
+  Final Project HTML
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Final Project</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="index.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text" rel="stylesheet">
+  </head>
+
+  <body>
+    <nav id="top-bar">
+      <div class="menu">
+        <div class="logo">
+          <a href="index.html">Divine Drape</a>
+        </div>
+
+        <div class="container">
+          <input type="checkbox" class="toggle-switch" id="modeSwitch">
+          <label class="switch" for="modeSwitch">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <form id="login-form">
+          <input type="text" id="username" placeholder="Username">
+          <input type="password" id="password" placeholder="Password">
+          <input type="checkbox" id="remember-me"> Remember me
+          <button type="submit" id="login">Login</button>
+        </form>
+        <div id="login-error"></div>
+      </div>
+      <div class="menu">
+        <ul id="font">
+          <li><a id="home-btn">Home</a></li>
+          <li><a id="mens-btn">Mens</a></li>
+          <li><a id="womens-btn">Womens</a></li>
+          <li><a id="childrens-btn">Childrens</a></li>
+          <li><a id="account-btn">Account</a></li>
+        </ul>
+
+        <div>
+          <input id='search-term' type='text' placeholder="Search for something">
+          <button id='search-btn' disabled>Search</button>
+          <div id="error-message" class="error-message"></div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="popup" id="popup">
+      <div id="popup-inner">
+        <h2 id="item-name">Item Name</h2>
+        <img id="item-image" src="" alt="Item Image">
+        <p id="item-description">Description</p>
+        <p id="item-price">Price</p>
+        <section id="popup-flex">
+          <button class="popup-btn popup-text" id="buy">Buy</button>
+          <button class="popup-btn popup-text" id="close-popup">Close</button>
+        </section>
+      </div>
+    </div>
+
+    <section id="intro">
+      <p class="error hidden"></p>
+      <img id="intro-img" src="" alt="">
+      <h1>Inspiring fashion</h1>
+      <section id="welcome">
+        <p>Explore our curated collection of exquisite fashion pieces that redefine style and elegance.</p>
+        <p>Discover the perfect blend of comfort and sophistication in our Winter selection.</p>
+        <p>Embrace the season with the latest trends, crafted to elevate your wardrobe and inspire your confidence.</p>
+      </section>
+    </section>
+
+    <nav id="filter-nav">
+      <h3>Filter:</h3>
+      <section id="filter">
+        <input type="radio" id="shirts-check" name="category" value="shirts">
+        <label for="shirts-check">Shirts</label>
+
+        <input type="radio" id="pants-check" name="category" value="pants">
+        <label for="pants-check">Pants</label>
+
+        <input type="radio" id="outer-check" name="category" value="outerwear">
+        <label for="outer-check">Outerwear</label>
+      </section>
+      <button id="resetButton">Reset</button>
+    </div>
+    </nav>
+
+    <h1 id="mens-section">Mens</h1>
+    <section class="category" id="mens"></section>
+
+    <h1 id="womens-section">Womens</h1>
+    <section class="category" id="womens"></section>
+
+    <h1 id="childrens-section">Childrens</h1>
+    <section class="category" id="childrens"></section>
+
+    <h1 id="search-section" class="hidden">Search Results</h1>
+    <section class="category hidden" id="search"></section>
+
+    <h1 class="hide-title1 hidden">Purchase History</h1>
+    <section id="history-section"></section>
+    <h1 class="hide-title2 hidden">We think you'll like:</h1>
+    <section id="recommendations"></section>
+  </body>
+</html>
